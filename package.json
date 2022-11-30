@@ -1,0 +1,15 @@
+{
+  "name": "outbox-pattern-go",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "web": "nodemon --exec \"go run ./cmd/web/main.go -addr=\"localhost:4000\"\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "nodemon": "^2.0.20"
+  }
+}

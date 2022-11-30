@@ -1,0 +1,6 @@
+{
+  "verbose": true,
+  "ignore": [".git", "node_modules/**/node_modules", "*_test.go"],
+  "ext": "go",
+  "signal": "SIGTERM"
+}
