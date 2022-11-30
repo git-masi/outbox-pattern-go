@@ -1,16 +1,32 @@
 version: '3.8'
+name: outbox
 services:
-  db:
+  outboxdb:
     image: postgres:15-alpine
     restart: always
+    container_name: outboxdb
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=outbox
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
     ports:
       - '5432:5432'
     volumes:
-      - db:/var/lib/postgresql/data
+      - outboxdb_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+
+  # Run a PGAdmin container to interact with in the browser
+  # pgadmin:
+  #   container_name: pgadmin4
+  #   image: dpage/pgadmin4:6
+  #   restart: always
+  #   environment:
+  #     - PGADMIN_DEFAULT_EMAIL=root@root.com
+  #     - PGADMIN_DEFAULT_PASSWORD=root
+  #     - PGADMIN_LISTEN_PORT=5050
+  #   ports:
+  #     - '5050:5050'
+
 volumes:
-  db:
+  outboxdb_data:
     driver: local
