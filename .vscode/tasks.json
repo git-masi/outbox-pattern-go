@@ -57,6 +57,19 @@
       }
     },
     {
+      "label": "Create order fulfillment trigger",
+      "type": "shell",
+      "command": "initsql=$(<order_fulfillment_trigger.sql) && docker exec outboxdb psql -d outbox -U postgres -c \"$initsql\"",
+      "options": {
+        "cwd": "${workspaceFolder}/infra/db"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
       "label": "Add seed data to outbox DB",
       "type": "shell",
       "command": "go run main.go",

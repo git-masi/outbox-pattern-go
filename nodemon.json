@@ -4,8 +4,8 @@
     ".git",
     "node_modules/**/node_modules",
     "*_test.go",
-    ".sql",
-    ".json"
+    "*.sql",
+    "*.json"
   ],
   "ext": "go",
   "signal": "SIGTERM"
