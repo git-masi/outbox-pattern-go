@@ -87,6 +87,7 @@
       "dependsOn": [
         "Create outbox DB",
         "Create outbox DB tables",
+        "Create order fulfillment trigger",
         "Add seed data to outbox DB"
       ]
     }
