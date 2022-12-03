@@ -66,14 +66,12 @@ func createFakeData(db *sql.DB) {
 		log.Fatal(err)
 	}
 
-	test := true
-	if !test {
-		createClients(txn, numCompanies, iso)
-		createOrders(txn, numOrders, numCompanies, orderStatus, iso)
-	}
-
+	createClients(txn, numCompanies, iso)
+	createOrders(txn, numOrders, numCompanies, orderStatus, iso)
 	clientItems := createItems(txn, numItems, numCompanies, iso)
 	createOrderItems(txn, clientItems, numCompanies, numOrders, maxOrderItems)
+	createFulfillmentFees(txn, numCompanies, iso)
+	createItemFees(txn, clientItems, iso)
 
 	err = txn.Commit()
 	if err != nil {
