@@ -52,7 +52,8 @@ CREATE TABLE IF NOT EXISTS item_fees (
 	last_updated text NOT NULL,
 	rate int NOT NULL,
 	fee_description item_fee_description NOT NULL,
-	item_id int REFERENCES items
+	item_id int REFERENCES items,
+	client_id int REFERENCES clients
 );
 
 CREATE TABLE IF NOT EXISTS charges (
