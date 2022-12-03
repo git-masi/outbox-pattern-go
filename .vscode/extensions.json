@@ -1,0 +1,12 @@
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "mtxr.sqltools",
+    "streetsidesoftware.code-spell-checker",
+    "dbaeumer.vscode-eslint",
+    "golang.go",
+    "rangav.vscode-thunder-client",
+    "shardulm94.trailing-spaces",
+    "eamodio.gitlens"
+  ]
+}
