@@ -1,8 +1,9 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
-	// "git-masi/outbox-pattern-go/internal/db"
+	"git-masi/outbox-pattern-go/internal/db"
 	"log"
 	"net/http"
 	"time"
@@ -17,18 +18,18 @@ func main() {
 
 	flag.Parse()
 
-	// db, err := db.OpenDb(*dsn)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	db, err := db.OpenDb(*dsn)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	go ListenForFulfillmentEvent(*dsn)
+	go listenForFulfillmentEvent(*dsn, []func(*pq.Notification){NotifyUsersOfFulfillmentEvent, UpdateCharges(db)})
 
 	mux := flow.New()
 
 	mux.HandleFunc("/ping", ping, http.MethodGet)
 
-	err := http.ListenAndServe(*addr, mux)
+	err = http.ListenAndServe(*addr, mux)
 	log.Fatal(err)
 }
 
@@ -36,7 +37,7 @@ func ping(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("OK"))
 }
 
-func ListenForFulfillmentEvent(dsn string) {
+func listenForFulfillmentEvent(dsn string, subscribers []func(*pq.Notification)) {
 	reportProblem := func(ev pq.ListenerEventType, err error) {
 		if err != nil {
 			log.Println(err.Error())
@@ -55,10 +56,23 @@ func ListenForFulfillmentEvent(dsn string) {
 	for {
 		select {
 		case msg := <-listener.Notify:
-			log.Printf("msg: %v\nextended: %+v\n", msg, msg)
+			for _, fn := range subscribers {
+				go fn(msg)
+			}
 		case <-time.After(90 * time.Second):
 			go listener.Ping()
 			log.Println("No new notifications in past 90 seconds, pinging DB to ensure connection is still alive")
 		}
+	}
+}
+
+// Imagine this was a real notification service which could send email, sms, push notifications, etc.
+func NotifyUsersOfFulfillmentEvent(notification *pq.Notification) {
+	log.Printf("notification: %+v\n", notification)
+}
+
+func UpdateCharges(db *sql.DB) func(notification *pq.Notification) {
+	return func(notification *pq.Notification) {
+		log.Println("updating charges")
 	}
 }
