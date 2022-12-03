@@ -1,6 +1,12 @@
 {
   "verbose": true,
-  "ignore": [".git", "node_modules/**/node_modules", "*_test.go"],
+  "ignore": [
+    ".git",
+    "node_modules/**/node_modules",
+    "*_test.go",
+    ".sql",
+    ".json"
+  ],
   "ext": "go",
   "signal": "SIGTERM"
 }
