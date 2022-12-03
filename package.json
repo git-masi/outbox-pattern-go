@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "web": "nodemon --exec \"go run ./cmd/web/main.go -addr=\"localhost:4000\"\""
+    "dev": "nodemon --exec \"go run ./cmd/web/main.go -addr=\"localhost:4000\"\""
   },
   "keywords": [],
   "author": "",

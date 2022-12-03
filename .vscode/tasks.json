@@ -1,0 +1,64 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run docker containers",
+      "type": "docker-compose",
+      "dockerCompose": {
+        "up": {
+          "detached": true,
+          "build": true
+        },
+        "files": ["${workspaceFolder}/docker-compose.yml"]
+      },
+      "presentation": {
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true
+      }
+    },
+    {
+      "label": "Run web server",
+      "type": "npm",
+      "script": "dev",
+      "presentation": {
+        "focus": false,
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "Start development",
+      "dependsOn": ["Run docker containers", "Run web server"],
+      "promptOnClose": true
+    },
+    {
+      "label": "Create outbox DB",
+      "type": "shell",
+      "command": "docker exec outboxdb psql -U postgres -c \"CREATE DATABASE outbox;\"",
+      "presentation": {
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Create outbox DB tables",
+      "type": "shell",
+      "command": "initsql=$(<init_outbox_tables.sql) && docker exec outboxdb psql -d outbox -U postgres -c \"$initsql\"",
+      "options": {
+        "cwd": "${workspaceFolder}/infra/db"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Init outbox DB",
+      "dependsOn": ["Create outbox DB", "Create outbox DB tables"]
+    }
+  ]
+}

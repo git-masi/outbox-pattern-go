@@ -6,16 +6,16 @@ services:
     restart: always
     container_name: outboxdb
     environment:
-      - POSTGRES_DB=outbox
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=root
+      # By default POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
     ports:
       - '5432:5432'
     volumes:
       - outboxdb_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      # It may be possible to use an init SQL file or script here
+      # - ./init.sql:/docker-entrypoint-initdb.d/create_tables.sql
 
-  # Run a PGAdmin container to interact with in the browser
+  # Run a PGAdmin container to interact with the postgres DB in the browser
   # pgadmin:
   #   container_name: pgadmin4
   #   image: dpage/pgadmin4:6
