@@ -57,8 +57,25 @@
       }
     },
     {
+      "label": "Add seed data to outbox DB",
+      "type": "shell",
+      "command": "go run main.go",
+      "options": {
+        "cwd": "${workspaceFolder}/infra/db"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared"
+      }
+    },
+    {
       "label": "Init outbox DB",
-      "dependsOn": ["Create outbox DB", "Create outbox DB tables"]
+      "dependsOn": [
+        "Create outbox DB",
+        "Create outbox DB tables",
+        "Add seed data to outbox DB"
+      ]
     }
   ]
 }
