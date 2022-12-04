@@ -75,7 +75,7 @@
       "type": "shell",
       "command": "go run main.go",
       "options": {
-        "cwd": "${workspaceFolder}/infra/db"
+        "cwd": "${workspaceFolder}/internal/db/seed"
       },
       "presentation": {
         "reveal": "silent",

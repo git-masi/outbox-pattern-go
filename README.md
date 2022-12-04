@@ -74,7 +74,7 @@ docker exec -it outboxdb psql -d outbox -U postgres
 You can remove all the project containers but running this command in the root directory:
 
 ```sh
-docker-compose rm -v
+docker-compose rm
 ```
 
 To remove the outbox DB volume - for example if you want to re-init the db - you can run the following command:
