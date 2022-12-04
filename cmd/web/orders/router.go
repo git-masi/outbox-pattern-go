@@ -7,14 +7,6 @@ import (
 	"github.com/alexedwards/flow"
 )
 
-type Order struct {
-	Id          int    `json:"id"`
-	Created     string `json:"created"`
-	LastUpdated string `json:"lastUpdated"`
-	Status      string `json:"status"`
-	ClientId    string `json:"clientId"`
-}
-
 func OrderRouter(mux *flow.Mux, db *sql.DB) {
 	base := "/orders"
 	addBase := func(path string) string {

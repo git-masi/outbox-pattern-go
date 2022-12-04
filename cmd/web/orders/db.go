@@ -2,6 +2,14 @@ package orders
 
 import "database/sql"
 
+type Order struct {
+	Id          int    `json:"id"`
+	Created     string `json:"created"`
+	LastUpdated string `json:"lastUpdated"`
+	Status      string `json:"status"`
+	ClientId    string `json:"clientId"`
+}
+
 func readAllOrders(db *sql.DB) ([]*Order, error) {
 	stmt := `select * from orders;`
 
