@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"flag"
+	"git-masi/outbox-pattern-go/cmd/web/notifications"
 	"git-masi/outbox-pattern-go/cmd/web/orders"
 	"git-masi/outbox-pattern-go/internal/db"
 	"log"
@@ -24,7 +25,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	go listenForFulfillmentEvent(*dsn, []func(*pq.Notification){NotifyUsersOfFulfillmentEvent, UpdateCharges(db)})
+	go listenForFulfillmentEvent(*dsn, []func(*pq.Notification){notifications.NotifyUsersOfFulfillmentEvent, UpdateCharges(db)})
 
 	mux := flow.New()
 
@@ -61,11 +62,6 @@ func listenForFulfillmentEvent(dsn string, subscribers []func(*pq.Notification))
 			log.Println("No new notifications in past 90 seconds, pinging DB to ensure connection is still alive")
 		}
 	}
-}
-
-// Imagine this was a real notification service which could send email, sms, push notifications, etc.
-func NotifyUsersOfFulfillmentEvent(notification *pq.Notification) {
-	log.Printf("notification: %+v\n", notification)
 }
 
 func UpdateCharges(db *sql.DB) func(notification *pq.Notification) {
