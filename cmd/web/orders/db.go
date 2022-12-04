@@ -2,6 +2,7 @@ package orders
 
 import (
 	"database/sql"
+	"git-masi/outbox-pattern-go/cmd/web/events"
 	"time"
 )
 
@@ -11,12 +12,6 @@ type Order struct {
 	LastUpdated string `json:"lastUpdated"`
 	Status      string `json:"status"`
 	ClientId    string `json:"clientId"`
-}
-
-type FulfillmentData struct {
-	OrderId  int     `json:"order_id"`
-	ClientId int     `json:"client_id"`
-	ItemIds  []uint8 `json:"item_ids"`
 }
 
 func readAllOrders(db *sql.DB) ([]*Order, error) {
@@ -63,7 +58,7 @@ func updateOrderStatus(txn *sql.Tx, orderId int, status string) error {
 func addFulfillmentStatusEvent(txn *sql.Tx, body []byte) error {
 	now := time.Now()
 	iso := now.Format(time.RFC3339)
-	stmt := `INSERT INTO order_fulfillment_events(created, message_body) VALUES($1, $2)`
+	stmt := `INSERT INTO order_fulfillment_events(created, event_body) VALUES($1, $2)`
 
 	_, err := txn.Exec(stmt, iso, body)
 	if err != nil {
@@ -73,12 +68,12 @@ func addFulfillmentStatusEvent(txn *sql.Tx, body []byte) error {
 	return nil
 }
 
-func getFulfillmentData(txn *sql.Tx, orderId int) (*FulfillmentData, error) {
+func getFulfillmentData(txn *sql.Tx, orderId int) (*events.FulfillmentEventBody, error) {
 	stmt := `
 		SELECT
 			o.id AS order_id,
 			o.client_id,
-			ARRAY_AGG(i.id) AS item_ids
+			array_to_string(array_agg(i.id), ',') AS item_ids
 		FROM orders o
 		JOIN order_items oi ON o.id = oi.order_id
 		JOIN items i ON oi.item_id = i.id
@@ -86,7 +81,7 @@ func getFulfillmentData(txn *sql.Tx, orderId int) (*FulfillmentData, error) {
 		GROUP BY o.id;
 	`
 
-	fd := &FulfillmentData{}
+	fd := &events.FulfillmentEventBody{}
 
 	row := txn.QueryRow(stmt, orderId)
 

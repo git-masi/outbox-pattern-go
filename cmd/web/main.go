@@ -2,7 +2,9 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"flag"
+	"git-masi/outbox-pattern-go/cmd/web/events"
 	"git-masi/outbox-pattern-go/cmd/web/notifications"
 	"git-masi/outbox-pattern-go/cmd/web/orders"
 	"git-masi/outbox-pattern-go/internal/db"
@@ -25,7 +27,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	go listenForFulfillmentEvent(*dsn, []func(*pq.Notification){notifications.NotifyUsersOfFulfillmentEvent, UpdateCharges(db)})
+	go listenForFulfillmentEvent(*dsn, []events.FulfillmentEventFn{notifications.NotifyUsersOfFulfillmentEvent, UpdateCharges(db)})
 
 	mux := flow.New()
 
@@ -35,7 +37,7 @@ func main() {
 	log.Fatal(err)
 }
 
-func listenForFulfillmentEvent(dsn string, subscribers []func(*pq.Notification)) {
+func listenForFulfillmentEvent(dsn string, subscribers []events.FulfillmentEventFn) {
 	reportProblem := func(ev pq.ListenerEventType, err error) {
 		if err != nil {
 			log.Println(err.Error())
@@ -53,9 +55,16 @@ func listenForFulfillmentEvent(dsn string, subscribers []func(*pq.Notification))
 
 	for {
 		select {
-		case msg := <-listener.Notify:
+		case ntf := <-listener.Notify:
+			var event events.FulfillmentEvent
+
+			err := json.Unmarshal([]byte(ntf.Extra), &event)
+			if err != nil {
+				log.Println(err.Error())
+			}
+
 			for _, fn := range subscribers {
-				go fn(msg)
+				go fn(&event)
 			}
 		case <-time.After(90 * time.Second):
 			go listener.Ping()
@@ -64,8 +73,8 @@ func listenForFulfillmentEvent(dsn string, subscribers []func(*pq.Notification))
 	}
 }
 
-func UpdateCharges(db *sql.DB) func(notification *pq.Notification) {
-	return func(notification *pq.Notification) {
+func UpdateCharges(db *sql.DB) events.FulfillmentEventFn {
+	return func(event *events.FulfillmentEvent) {
 		log.Println("updating charges")
 	}
 }
