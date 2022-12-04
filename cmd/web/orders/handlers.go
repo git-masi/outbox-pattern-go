@@ -20,6 +20,7 @@ func getOrders(db *sql.DB) http.HandlerFunc {
 		res, err := json.Marshal(orders)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		w.Write(res)
@@ -35,8 +36,8 @@ func updateOrder(db *sql.DB) http.HandlerFunc {
 		}
 
 		var update struct {
-			Id     int    `json:"id"`
-			Status string `json:"status"`
+			OrderId int    `json:"id"`
+			Status  string `json:"status"`
 		}
 		var unmarshalErr *json.UnmarshalTypeError
 
@@ -53,9 +54,45 @@ func updateOrder(db *sql.DB) http.HandlerFunc {
 			return
 		}
 
-		err = updateOrderStatus(db, update.Id, update.Status)
+		txn, err := db.Begin()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		defer txn.Rollback()
+
+		err = updateOrderStatus(txn, update.OrderId, update.Status)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Add an event to the "outbox"
+		if update.Status == "shipped" {
+			fd, err := getFulfillmentData(txn, update.OrderId)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			data, err := json.Marshal(fd)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			err = addFulfillmentStatusEvent(txn, data)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+
+		err = txn.Commit()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 
 		w.Write([]byte("OK"))

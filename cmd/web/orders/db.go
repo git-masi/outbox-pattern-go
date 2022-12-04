@@ -1,6 +1,9 @@
 package orders
 
-import "database/sql"
+import (
+	"database/sql"
+	"time"
+)
 
 type Order struct {
 	Id          int    `json:"id"`
@@ -8,6 +11,12 @@ type Order struct {
 	LastUpdated string `json:"lastUpdated"`
 	Status      string `json:"status"`
 	ClientId    string `json:"clientId"`
+}
+
+type FulfillmentData struct {
+	OrderId  int   `json:"order_id"`
+	ClientId int   `json:"client_id"`
+	ItemIds  []int `json:"item_ids"`
 }
 
 func readAllOrders(db *sql.DB) ([]*Order, error) {
@@ -40,13 +49,51 @@ func readAllOrders(db *sql.DB) ([]*Order, error) {
 	return orders, nil
 }
 
-func updateOrderStatus(db *sql.DB, orderId int, status string) error {
+func updateOrderStatus(txn *sql.Tx, orderId int, status string) error {
 	stmt := `UPDATE orders SET "status" = $1 WHERE orders.id = $2`
 
-	_, err := db.Exec(stmt, status, orderId)
+	_, err := txn.Exec(stmt, status, orderId)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func addFulfillmentStatusEvent(txn *sql.Tx, body []byte) error {
+	now := time.Now()
+	iso := now.Format(time.RFC3339)
+	stmt := `INSERT INTO order_fulfillment_messages(created, message_body) VALUES($1, $2)`
+
+	_, err := txn.Exec(stmt, iso, body)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getFulfillmentData(txn *sql.Tx, orderId int) (*FulfillmentData, error) {
+	stmt := `
+		SELECT
+			o.id AS order_id,
+			o.client_id,
+			ARRAY_AGG(i.id) AS item_ids
+		FROM orders o
+		JOIN order_items oi ON o.id = oi.order_id
+		JOIN items i ON oi.item_id = i.id
+		WHERE o.id = $1
+		GROUP BY o.id;
+	`
+
+	fd := &FulfillmentData{}
+
+	row := txn.QueryRow(stmt, orderId)
+
+	err := row.Scan(&fd.OrderId, &fd.ClientId, &fd.ItemIds)
+	if err != nil {
+		return nil, err
+	}
+
+	return fd, nil
 }
