@@ -1,9 +1,9 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"flag"
+	"git-masi/outbox-pattern-go/cmd/web/billing"
 	"git-masi/outbox-pattern-go/cmd/web/events"
 	"git-masi/outbox-pattern-go/cmd/web/notifications"
 	"git-masi/outbox-pattern-go/cmd/web/orders"
@@ -27,7 +27,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	go listenForFulfillmentEvent(*dsn, []events.FulfillmentEventFn{notifications.NotifyUsersOfFulfillmentEvent, UpdateCharges(db)})
+	go listenForFulfillmentEvent(*dsn, []events.FulfillmentEventFn{notifications.NotifyUsersOfFulfillmentEvent, billing.UpdateCharges(db)})
 
 	mux := flow.New()
 
@@ -37,6 +37,7 @@ func main() {
 	log.Fatal(err)
 }
 
+// This is effectively a pubsub
 func listenForFulfillmentEvent(dsn string, subscribers []events.FulfillmentEventFn) {
 	reportProblem := func(ev pq.ListenerEventType, err error) {
 		if err != nil {
@@ -47,7 +48,7 @@ func listenForFulfillmentEvent(dsn string, subscribers []events.FulfillmentEvent
 	minReconn := 10 * time.Second
 	maxReconn := time.Minute
 	listener := pq.NewListener(dsn, minReconn, maxReconn, reportProblem)
-	// Listen for a notification from the `fulfillment_event` channel
+
 	err := listener.Listen("fulfillment_event")
 	if err != nil {
 		panic(err)
@@ -70,11 +71,5 @@ func listenForFulfillmentEvent(dsn string, subscribers []events.FulfillmentEvent
 			go listener.Ping()
 			log.Println("No new notifications in past 90 seconds, pinging DB to ensure connection is still alive")
 		}
-	}
-}
-
-func UpdateCharges(db *sql.DB) events.FulfillmentEventFn {
-	return func(event *events.FulfillmentEvent) {
-		log.Println("updating charges")
 	}
 }
