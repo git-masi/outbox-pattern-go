@@ -13,9 +13,9 @@ RETURN NULL;
 -- The return value is ignored since this is an AFTER trigger
 END;
 $$ LANGUAGE plpgsql;
--- The trigger will call the function whenever there is an insert or update to the order_fulfillment_messages table
+-- The trigger will call the function whenever there is an insert or update to the order_fulfillment_events table
 CREATE TRIGGER handle_order_fulfillment_event
 AFTER
 INSERT
 	OR
-UPDATE ON order_fulfillment_messages FOR EACH ROW EXECUTE FUNCTION handle_order_fulfillment_event();
+UPDATE ON order_fulfillment_events FOR EACH ROW EXECUTE FUNCTION handle_order_fulfillment_event();

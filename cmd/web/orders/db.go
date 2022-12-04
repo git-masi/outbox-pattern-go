@@ -63,7 +63,7 @@ func updateOrderStatus(txn *sql.Tx, orderId int, status string) error {
 func addFulfillmentStatusEvent(txn *sql.Tx, body []byte) error {
 	now := time.Now()
 	iso := now.Format(time.RFC3339)
-	stmt := `INSERT INTO order_fulfillment_messages(created, message_body) VALUES($1, $2)`
+	stmt := `INSERT INTO order_fulfillment_events(created, message_body) VALUES($1, $2)`
 
 	_, err := txn.Exec(stmt, iso, body)
 	if err != nil {

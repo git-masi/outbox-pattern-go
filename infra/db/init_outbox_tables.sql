@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS orders (
 	"status" order_status NOT NULL,
 	client_id int REFERENCES clients
 );
-CREATE TABLE IF NOT EXISTS order_fulfillment_messages (
+CREATE TABLE IF NOT EXISTS order_fulfillment_events (
 	id serial PRIMARY KEY,
 	created text NOT NULL,
 	message_body json NOT NULL
