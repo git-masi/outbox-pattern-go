@@ -66,6 +66,8 @@ func createFakeData(db *sql.DB) {
 		log.Fatal(err)
 	}
 
+	defer txn.Rollback()
+
 	createClients(txn, numCompanies, iso)
 	createOrders(txn, numOrders, numCompanies, orderStatus, iso)
 	clientItems := createItems(txn, numItems, numCompanies, iso)
@@ -92,11 +94,6 @@ func createClients(txn *sql.Tx, numCompanies int, iso string) {
 		}
 	}
 
-	_, err = stmt.Exec()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	err = stmt.Close()
 	if err != nil {
 		log.Fatal(err)
@@ -114,11 +111,6 @@ func createOrders(txn *sql.Tx, numOrders int, numCompanies int, status string, i
 		if err != nil {
 			log.Fatal(err)
 		}
-	}
-
-	_, err = stmt.Exec()
-	if err != nil {
-		log.Fatal(err)
 	}
 
 	err = stmt.Close()
@@ -154,11 +146,6 @@ func createItems(txn *sql.Tx, numItems int, numCompanies int, iso string) map[in
 		}
 
 		clientItems[companyId] = append(clientItems[companyId], i)
-	}
-
-	_, err = stmt.Exec()
-	if err != nil {
-		log.Fatal(err)
 	}
 
 	err = stmt.Close()
@@ -198,11 +185,6 @@ func createOrderItems(txn *sql.Tx, clientItems map[int][]int, numCompanies, numO
 		}
 	}
 
-	_, err = stmt.Exec()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	err = stmt.Close()
 	if err != nil {
 		log.Fatal(err)
@@ -222,11 +204,6 @@ func createFulfillmentFees(txn *sql.Tx, numCompanies int, iso string) {
 		if err != nil {
 			log.Fatal(err)
 		}
-	}
-
-	_, err = stmt.Exec()
-	if err != nil {
-		log.Fatal(err)
 	}
 
 	err = stmt.Close()
@@ -264,11 +241,6 @@ func createItemFees(txn *sql.Tx, clientItems map[int][]int, iso string) {
 				}
 			}
 		}
-	}
-
-	_, err = stmt.Exec()
-	if err != nil {
-		log.Fatal(err)
 	}
 
 	err = stmt.Close()
