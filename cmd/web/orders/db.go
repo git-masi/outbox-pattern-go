@@ -15,7 +15,7 @@ func readAllOrders(db *sql.DB) ([]*Order, error) {
 	// returned from the Db.
 	// It would also be good to add optional conditions like orders that were
 	// created after a certain date or with a specific status or client ID.
-	stmt := `select * from orders;`
+	stmt := `SELECT * FROM orders;`
 
 	rows, err := db.Query(stmt)
 	if err != nil {
@@ -38,4 +38,15 @@ func readAllOrders(db *sql.DB) ([]*Order, error) {
 	}
 
 	return orders, nil
+}
+
+func updateOrderStatus(db *sql.DB, orderId int, status string) error {
+	stmt := `UPDATE orders SET "status" = $1 WHERE orders.id = $2`
+
+	_, err := db.Exec(stmt, status, orderId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

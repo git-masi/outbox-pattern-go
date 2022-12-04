@@ -3,6 +3,7 @@ package orders
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 )
 
@@ -25,6 +26,38 @@ func getOrders(db *sql.DB) http.HandlerFunc {
 	}
 }
 
-func updateOrder(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("update!"))
+func updateOrder(db *sql.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		contentType := r.Header.Get("Content-Type")
+		if contentType != "application/json" {
+			http.Error(w, "Content type is not application/json", http.StatusBadRequest)
+			return
+		}
+
+		var update struct {
+			Id     int    `json:"id"`
+			Status string `json:"status"`
+		}
+		var unmarshalErr *json.UnmarshalTypeError
+
+		decoder := json.NewDecoder(r.Body)
+		decoder.DisallowUnknownFields()
+
+		err := decoder.Decode(&update)
+		if err != nil {
+			if errors.As(err, &unmarshalErr) {
+				http.Error(w, "Bad Request. Wrong Type provided for field "+unmarshalErr.Field, http.StatusBadRequest)
+			} else {
+				http.Error(w, "Bad Request "+err.Error(), http.StatusBadRequest)
+			}
+			return
+		}
+
+		err = updateOrderStatus(db, update.Id, update.Status)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+
+		w.Write([]byte("OK"))
+	}
 }
