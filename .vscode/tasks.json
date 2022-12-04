@@ -23,9 +23,10 @@
       "type": "npm",
       "script": "dev",
       "presentation": {
-        "focus": false,
+        "focus": true,
         "reveal": "always",
-        "panel": "dedicated"
+        "panel": "dedicated",
+        "showReuseMessage": false
       }
     },
     {
