@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE TABLE IF NOT EXISTS order_fulfillment_events (
 	id serial PRIMARY KEY,
 	created text NOT NULL,
-	message_body json NOT NULL
+	event_body json NOT NULL
 );
 CREATE TABLE IF NOT EXISTS items (
 	id serial PRIMARY KEY,
