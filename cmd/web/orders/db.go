@@ -11,6 +11,10 @@ type Order struct {
 }
 
 func readAllOrders(db *sql.DB) ([]*Order, error) {
+	// In a real application we should have some limits on the number of orders
+	// returned from the Db.
+	// It would also be good to add optional conditions like orders that were
+	// created after a certain date or with a specific status or client ID.
 	stmt := `select * from orders;`
 
 	rows, err := db.Query(stmt)
