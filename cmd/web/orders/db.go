@@ -14,9 +14,9 @@ type Order struct {
 }
 
 type FulfillmentData struct {
-	OrderId  int   `json:"order_id"`
-	ClientId int   `json:"client_id"`
-	ItemIds  []int `json:"item_ids"`
+	OrderId  int     `json:"order_id"`
+	ClientId int     `json:"client_id"`
+	ItemIds  []uint8 `json:"item_ids"`
 }
 
 func readAllOrders(db *sql.DB) ([]*Order, error) {
