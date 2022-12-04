@@ -54,7 +54,7 @@ func createFakeData(db *sql.DB) {
 	now := time.Now()
 	iso := now.Format(time.RFC3339)
 	orderStatus := "created"
-	numCompanies := 5
+	numClients := 10
 	numOrders := 1000
 	numItems := 100
 	maxOrderItems := 5
@@ -68,11 +68,11 @@ func createFakeData(db *sql.DB) {
 
 	defer txn.Rollback()
 
-	createClients(txn, numCompanies, iso)
-	createOrders(txn, numOrders, numCompanies, orderStatus, iso)
-	clientItems := createItems(txn, numItems, numCompanies, iso)
-	createOrderItems(txn, clientItems, numCompanies, numOrders, maxOrderItems)
-	createFulfillmentFees(txn, numCompanies, iso)
+	createClients(txn, numClients, iso)
+	createOrders(txn, numOrders, numClients, orderStatus, iso)
+	clientItems := createItems(txn, numItems, numClients, iso)
+	createOrderItems(txn, clientItems, numClients, numOrders, maxOrderItems)
+	createFulfillmentFees(txn, numClients, iso)
 	createItemFees(txn, clientItems, iso)
 
 	err = txn.Commit()

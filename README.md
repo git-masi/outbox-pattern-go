@@ -1,3 +1,9 @@
+# Outbox
+
+## About
+
+TBD
+
 ## Getting started
 
 ### Docker and Docker Compose
@@ -28,6 +34,14 @@ Pay special attention to the following tasks as they are useful for getting the 
 - "Init outbox DB"
 
 ### Initialize the DB
+
+**NOTE**
+
+Do not run the "Start development" task or start the web server if you have not initialized the database.
+
+**END NOTE**
+
+This step assumes you have not already initialized the DB. If you have already initialized the DB but you want to start from scratch you will need to remove the DB volume. See the section called "Removing the project containers/volumes" for more info.
 
 Start the database docker container by either running `docker-compose up -d` in your terminal (omit the `-d` if you don't want detached mode). Or by running either the "Run docker containers" task or "Start development" task (see the tasks section for more information).
 
@@ -82,3 +96,18 @@ To remove the outbox DB volume - for example if you want to re-init the db - you
 ```sh
 docker volume rm outbox_outboxdb_data
 ```
+
+### Update orders to "shipped"
+
+If you want to see this code in action you can use Thunder Client request called "update order status" or make a PATCH request to `/orders/update` using Postman, curl, etc.
+
+Here is an example payload:
+
+```
+{
+  "id": 1,
+  "status": "shipped"
+}
+```
+
+If you want to spam the server with updates then run the task called "Spam order updates".
