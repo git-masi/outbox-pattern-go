@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"git-masi/outbox-pattern-go/cmd/web/billing"
 	"git-masi/outbox-pattern-go/cmd/web/events"
@@ -10,10 +9,9 @@ import (
 	"git-masi/outbox-pattern-go/internal/db"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/alexedwards/flow"
-	"github.com/lib/pq"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -27,7 +25,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	go listenForFulfillmentEvent(*dsn, []events.FulfillmentEventFn{notifications.NotifyUsersOfFulfillmentEvent, billing.UpdateCharges(db)})
+	// A real pubsub should be able to subscribe and unsubscribe but for simplicity
+	// we can init everything here to focus on functionality
+	go events.ListenForFulfillmentEvent(*dsn, []events.FulfillmentEventFn{notifications.NotifyUsersOfFulfillmentEvent, billing.UpdateCharges(db)})
 
 	mux := flow.New()
 
@@ -35,41 +35,4 @@ func main() {
 
 	err = http.ListenAndServe(*addr, mux)
 	log.Fatal(err)
-}
-
-// This is effectively a pubsub
-func listenForFulfillmentEvent(dsn string, subscribers []events.FulfillmentEventFn) {
-	reportProblem := func(ev pq.ListenerEventType, err error) {
-		if err != nil {
-			log.Println(err.Error())
-		}
-	}
-
-	minReconn := 10 * time.Second
-	maxReconn := time.Minute
-	listener := pq.NewListener(dsn, minReconn, maxReconn, reportProblem)
-
-	err := listener.Listen("fulfillment_event")
-	if err != nil {
-		panic(err)
-	}
-
-	for {
-		select {
-		case ntf := <-listener.Notify:
-			var event events.FulfillmentEvent
-
-			err := json.Unmarshal([]byte(ntf.Extra), &event)
-			if err != nil {
-				log.Println(err.Error())
-			}
-
-			for _, fn := range subscribers {
-				go fn(&event)
-			}
-		case <-time.After(90 * time.Second):
-			go listener.Ping()
-			log.Println("No new notifications in past 90 seconds, pinging DB to ensure connection is still alive")
-		}
-	}
 }
