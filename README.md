@@ -2,7 +2,9 @@
 
 ## About
 
-TBD
+This project is a compliment to my article on async communication with database triggers which [you can find here](https://www.linkedin.com/pulse/async-communication-postgres-database-triggers-eric-masi/)
+
+The basic goal it to show how we can use database triggers to pass events to our application code and do some useful work based on those events.
 
 ## Getting started
 
